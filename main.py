@@ -2,6 +2,7 @@ import numpy as np
 import cv2 as cv
 import pyzbar.pyzbar as pyzbar
 import datetime
+import time
 
 
 current_time = f"[{datetime.datetime.now()}]"
@@ -24,16 +25,29 @@ while True:
     barcode = pyzbar.decode(frame)
     if barcode:
         print(f"{current_time}  Recognized a barcode!")
-    color = (0, 0, 255)
+
+    color_of_qr_rectangle = (0, 0, 255)
+    color_of_text = (255, 255, 255)
     thickness = 2
 
     for QR in barcode:
         # x and y are upper left corner of the barcode while w and h are width and height of the barcode
         x, y, w, h = QR.rect
-        cv.rectangle(frame, (x, y), (x+w, y+h), color, thickness)
-        filename = "QRCode_2.png"
-        cv.imwrite(filename, frame)
-        print(f"{current_time}  Image successfully saved as {filename}")
+        print(x, y, w, h)
+        cv.rectangle(frame, (x, y), (x+w, y+h), color_of_qr_rectangle, thickness)
+        for i in range(3, -1, -1):
+            cv.putText(frame, str(i), (150, 150), cv.FONT_HERSHEY_PLAIN, 10, color_of_text, 2)
+            cv.imshow('frame', frame)
+            frame = cap.read()[1]  # reading a new frame before updating the countdown
+            cv.waitKey(1000)
+            filename = f"QRPhoto_{i}.png"
+            cv.imwrite(filename, frame)
+            print(f"{current_time}  Image successfully saved as {filename}")
+            if i == 0:
+                break
+        # to give us time to hide the picture, so it does not loop and try to decode and save pictures again
+        cv.waitKey(1000)
+        break
 
     # Display the resulting frame
     cv.imshow('frame', frame)
