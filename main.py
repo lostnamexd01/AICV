@@ -35,8 +35,10 @@ while True:
         break
 
     barcode = pyzbar.decode(frame)
+
     if barcode:
         print(f"{current_time}  Recognized a barcode!")
+        print(barcode[0].data.decode('ascii'))
 
     for QR in barcode:
         # x and y are upper left corner of the barcode while w and h are width and height of the barcode
@@ -44,6 +46,7 @@ while True:
         print(x, y, w, h)
         cv.rectangle(frame, (x, y), (x+w, y+h), color_of_qr_rectangle, thickness)
         for i in range(3, -1, -1):
+            cv.waitKey(200)
             cv.putText(frame, str(i), (150, 150), cv.FONT_HERSHEY_PLAIN, 10, color_of_text, 2)
             cv.imshow('frame', frame)
             frame = cap.read()[1]  # reading a new frame before updating the countdown
