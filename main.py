@@ -40,12 +40,12 @@ while True:
     if barcode:
         print(f"{current_time}  Recognized a barcode!")
         bdata = barcode[0].data.decode('utf-8')
-        print(bdata)
+        print(f"{current_time}  QR decoded: \"{bdata}\"")
 
     for QR in barcode:
         # x and y are upper left corner of the barcode while w and h are width and height of the barcode
         x, y, w, h = QR.rect
-        print(x, y, w, h)
+        # print(x, y, w, h)
         cv.rectangle(frame, (x, y), (x+w, y+h), color_of_qr_rectangle, thickness)
         if QR.data.decode('utf-8') == our_QR_text:
             for i in range(3, -1, -1):
