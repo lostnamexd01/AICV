@@ -4,6 +4,9 @@ import pyzbar.pyzbar as pyzbar
 import datetime
 import os
 
+#testing new branch
+
+
 current_time = f"[{datetime.datetime.now()}]"
 print(current_time)
 current_directory = os.getcwd()
