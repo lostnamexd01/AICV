@@ -4,6 +4,8 @@ import pyzbar.pyzbar as pyzbar
 import datetime
 import os
 
+# testing new branch
+
 current_time = f"[{datetime.datetime.now()}]"
 print(current_time)
 current_directory = os.getcwd()
@@ -14,7 +16,6 @@ try:
     os.mkdir(path)
 except OSError as error:
     print(f"{current_time}  {error}")
-
 
 color_of_qr_rectangle = (0, 0, 255)
 color_of_text = (255, 255, 255)
@@ -46,7 +47,7 @@ while True:
         # x and y are upper left corner of the barcode while w and h are width and height of the barcode
         x, y, w, h = QR.rect
         # print(x, y, w, h)
-        cv.rectangle(frame, (x, y), (x+w, y+h), color_of_qr_rectangle, thickness)
+        cv.rectangle(frame, (x, y), (x + w, y + h), color_of_qr_rectangle, thickness)
         if QR.data.decode('utf-8') == our_QR_text:
             for i in range(3, -1, -1):
                 cv.waitKey(200)
