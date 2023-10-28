@@ -4,8 +4,6 @@ import pyzbar.pyzbar as pyzbar
 import datetime
 import os
 
-# testing new branch
-
 current_time = f"[{datetime.datetime.now()}]"
 print(current_time)
 current_directory = os.getcwd()
@@ -31,7 +29,7 @@ if not cap.isOpened():
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
-    # if frame is read correctly ret is True
+    # if the frame is read correctly, ret is True
     if not ret:
         print(f"{current_time}  Can't receive frame (stream end?). Exiting ...")
         break
@@ -44,9 +42,7 @@ while True:
         print(f"{current_time}  QR decoded: \"{bdata}\"")
 
     for QR in barcode:
-        # x and y are upper left corner of the barcode while w and h are width and height of the barcode
         x, y, w, h = QR.rect
-        # print(x, y, w, h)
         cv.rectangle(frame, (x, y), (x + w, y + h), color_of_qr_rectangle, thickness)
         if QR.data.decode('utf-8') == our_QR_text:
             for i in range(3, -1, -1):
@@ -59,7 +55,21 @@ while True:
                 cv.imwrite(f"{path}/{filename}", frame)
                 print(f"{current_time}  Image successfully saved as {filename}")
                 if i == 0:
-                    # to give us time to hide the picture, so it does not loop and try to decode and save pictures again
+                    image = cv.imread(f'{path}/QRPhoto_2.png')
+                    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+                    blurred = cv.GaussianBlur(gray, (5, 5), 0)
+                    edges = cv.Canny(blurred, 50, 150)
+                    contours, _ = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                    largest_contour = max(contours, key=cv.contourArea)
+
+                    epsilon = 0.02 * cv.arcLength(largest_contour, True)
+                    approx = cv.approxPolyDP(largest_contour, epsilon, True)
+
+                    x, y, w, h = cv.boundingRect(approx)
+                    roi = image[y:y + h, x:x + w]
+
+                    cv.imwrite('./images/ROI.png', roi)
+
                     cv.waitKey(1000)
                     break
         break
@@ -71,6 +81,6 @@ while True:
         cv.imwrite(f"{path}/Last_frame.png", frame)
         break
 
-# When everything done, release the capture
+# When everything is done, release the capture
 cap.release()
 cv.destroyAllWindows()
