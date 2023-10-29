@@ -23,13 +23,24 @@ try:
 except OSError as error:
     logging.warning(f"{error}")
 
-color_of_qr_rectangle = (0, 0, 255)
-color_of_text = (255, 255, 255)
-thickness = 2
+# Some settings
+frame_width = 1280
+frame_height = 720
+qr_rectangle_color = (0, 0, 255)
+text_start_point = (frame_width//2, frame_height//2)
+text_font = cv.FONT_HERSHEY_SIMPLEX
+font_scale = 5
+text_color = (0, 0, 255)
+thickness = 5
 our_QR_text = "Take a screenshot now!"
 
-# Open the default camera (you can check available cameras using 'camera_detect' script)
-cap = cv.VideoCapture(1)
+
+# Open the default camera and set resolution (you can check available cameras using 'camera_detect' script)
+# DSHOW is an interface to the video I/O library provided by OS
+cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
+cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
+
 
 if not cap.isOpened():
     logging.error("Cannot open camera")
@@ -42,6 +53,9 @@ while True:
     if not ret:
         logging.error("Can't receive frame (stream end?). Exiting ...")
         break
+
+    # Get frame dimensions
+    (frame_height, frame_width) = frame.shape[:2]
 
     # Display the frame
     cv.imshow('frame', frame)
@@ -56,12 +70,12 @@ while True:
 
     for QR in barcode:
         x, y, w, h = QR.rect
-        cv.rectangle(frame, (x, y), (x + w, y + h), color_of_qr_rectangle, thickness)
+        cv.rectangle(frame, (x, y), (x + w, y + h), qr_rectangle_color, thickness)
 
         if QR.data.decode('utf-8') == our_QR_text:
             for i in range(3, -1, -1):
                 cv.waitKey(200)
-                cv.putText(frame, str(i), (150, 150), cv.FONT_HERSHEY_PLAIN, 10, color_of_text, 2)
+                cv.putText(frame, str(i), text_start_point, text_font, font_scale, text_color, thickness, cv.LINE_AA)
                 cv.imshow('frame', frame)
                 frame = cap.read()[1]  # Read a new frame before updating the countdown
                 cv.waitKey(1000)
