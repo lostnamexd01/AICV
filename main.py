@@ -27,7 +27,7 @@ except OSError as error:
 frame_width = 1280
 frame_height = 720
 qr_rectangle_color = (0, 0, 255)
-text_start_point = (frame_width//2, frame_height//2)
+text_start_point = (frame_width//2 - 20, frame_height//2)
 text_font = cv.FONT_HERSHEY_SIMPLEX
 font_scale = 5
 text_color = (0, 0, 255)
@@ -37,7 +37,7 @@ our_QR_text = "Take a screenshot now!"
 
 # Open the default camera and set resolution (you can check available cameras using 'camera_detect' script)
 # DSHOW is an interface to the video I/O library provided by OS
-cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+cap = cv.VideoCapture(0, cv.CAP_DSHOW)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
 
