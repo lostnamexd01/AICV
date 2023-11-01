@@ -24,7 +24,7 @@ except OSError as error:
     logging.warning(f"Error while creating directory: {error}")
 
 # Settings
-camera_choice = 0
+camera_choice = 1
 frame_width = 1280
 frame_height = 720
 qr_rectangle_color = (0, 0, 255)
@@ -34,6 +34,7 @@ font_scale = 5
 text_color = (0, 0, 255)
 thickness = 5
 our_QR_text = "Take a screenshot now!"
+filename_cropped = "Cropped_paper.png"
 
 # Open the camera and set resolution (you can check available cameras using 'camera_detect' script)
 # DSHOW is an interface to the video I/O library provided by OS
@@ -94,15 +95,32 @@ while True:
                         # Get the largest contour (the paper with photos printed)
                         largest_contour = max(contours, key=cv.contourArea)
 
-                        # Extract the region of interest using the largest contour
-                        x, y, w, h = cv.boundingRect(largest_contour)
-                        roi = image[y:y + h, x:x + w]
+                        # Contour approximation
+                        epsilon = 0.01 * cv.arcLength(largest_contour, True)
+                        approx = cv.approxPolyDP(largest_contour, epsilon, True)
 
-                        filename_cropped = "ROI.png"
-                        cv.imwrite(f"{path}/{filename_cropped}", roi)
+                        # Apply Geometrical Transform
+                        # The approxPolyDP's first output coordinate is of the lowest point, so either bottom left or
+                        # bottom right and then the other coordinates are outputted clockwise.
+                        # The if statement decides whether the first one is bottom left or bottom right
+                        if approx[0][0][0] > (approx[1][0][0] + 200):
+
+                            pts1 = np.float32([approx[0], approx[1], approx[2], approx[3]])
+                            pts2 = np.float32([[1280, 0], [0, 0], [0, 720], [1280, 720]])
+
+                            matrix = cv.getPerspectiveTransform(pts1, pts2)
+                            transformed_frame = cv.warpPerspective(image, matrix, (1280, 720))
+
+                        else:
+                            pts1 = np.float32([approx[0], approx[1], approx[2], approx[3]])
+                            pts2 = np.float32([[0, 0], [0, 720], [1280, 720], [1280, 0]])
+
+                            matrix = cv.getPerspectiveTransform(pts1, pts2)
+                            transformed_frame = cv.warpPerspective(image, matrix, (1280, 720))
+
+                        cv.imwrite(f"{path}/{filename_cropped}", transformed_frame)
                         logging.info(f"Cropped image successfully saved as {filename_cropped}")
 
-                        # cv.waitKey(1000)
                 cv.waitKey(1000)
                 break
 
