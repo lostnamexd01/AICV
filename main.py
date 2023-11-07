@@ -3,6 +3,7 @@ import os
 import cv2 as cv
 import pyzbar.pyzbar as pyzbar
 import logging
+import compare_photos
 
 # Set up logging
 logging.basicConfig(
@@ -34,7 +35,7 @@ font_scale = 5
 text_color = (0, 0, 255)
 thickness = 5
 our_QR_text = "Take a screenshot now!"
-filename_cropped = "Cropped_paper.png"
+# filename_cropped = "Cropped_paper.png"
 
 # Open the camera and set resolution (you can check available cameras using 'camera_detect' script)
 # DSHOW is an interface to the video I/O library provided by OS
@@ -82,44 +83,47 @@ while True:
 
                     # Extracting the paper from the photo after the countdown
                     if i == 0:
-                        image = cv.imread(f'{path}/QRPhoto_1.png')
+                        for j in range(0, 4):
+                            image_name = f'QRPhoto_{j}.png'
+                            filename_cropped = f"Cropped_paper_{j}.png"
+                            image = cv.imread(f'{path}/{image_name}')
 
-                        # Convert the image to grayscale for easier processing
-                        gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-                        # Apply Gaussian blur to reduce noise
-                        blurred = cv.GaussianBlur(gray, (5, 5), 0)
-                        # Apply Canny edge detection for finding edges in the image
-                        edges = cv.Canny(blurred, 50, 150)
-                        # Find contours in the edge-detected image
-                        contours, _ = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-                        # Get the largest contour (the paper with photos printed)
-                        largest_contour = max(contours, key=cv.contourArea)
+                            # Convert the image to grayscale for easier processing
+                            gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+                            # Apply Gaussian blur to reduce noise
+                            blurred = cv.GaussianBlur(gray, (5, 5), 0)
+                            # Apply Canny edge detection for finding edges in the image
+                            edges = cv.Canny(blurred, 50, 150)
+                            # Find contours in the edge-detected image
+                            contours, _ = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                            # Get the largest contour (the paper with photos printed)
+                            largest_contour = max(contours, key=cv.contourArea)
 
-                        # Contour approximation
-                        epsilon = 0.01 * cv.arcLength(largest_contour, True)
-                        approx = cv.approxPolyDP(largest_contour, epsilon, True)
+                            # Contour approximation
+                            epsilon = 0.01 * cv.arcLength(largest_contour, True)
+                            approx = cv.approxPolyDP(largest_contour, epsilon, True)
 
-                        # Apply Geometrical Transform
-                        # The approxPolyDP's first output coordinate is of the lowest point, so either bottom left or
-                        # bottom right and then the other coordinates are outputted clockwise.
-                        # The if statement decides whether the first one is bottom left or bottom right
-                        if approx[0][0][0] > (approx[1][0][0] + 200):
+                            # Apply Geometrical Transform The approxPolyDP's first output coordinate is of the lowest
+                            # point, so either bottom left or bottom right and then the other coordinates are
+                            # outputted clockwise. The if statement decides whether the first one is bottom left or
+                            # bottom right
+                            if approx[0][0][0] > (approx[1][0][0] + 200):
 
-                            pts1 = np.float32([approx[0], approx[1], approx[2], approx[3]])
-                            pts2 = np.float32([[1280, 0], [0, 0], [0, 720], [1280, 720]])
+                                pts1 = np.float32([approx[0], approx[1], approx[2], approx[3]])
+                                pts2 = np.float32([[1280, 0], [0, 0], [0, 720], [1280, 720]])
 
-                            matrix = cv.getPerspectiveTransform(pts1, pts2)
-                            transformed_frame = cv.warpPerspective(image, matrix, (1280, 720))
+                                matrix = cv.getPerspectiveTransform(pts1, pts2)
+                                transformed_frame = cv.warpPerspective(image, matrix, (1280, 720))
 
-                        else:
-                            pts1 = np.float32([approx[0], approx[1], approx[2], approx[3]])
-                            pts2 = np.float32([[0, 0], [0, 720], [1280, 720], [1280, 0]])
+                            else:
+                                pts1 = np.float32([approx[0], approx[1], approx[2], approx[3]])
+                                pts2 = np.float32([[0, 0], [0, 720], [1280, 720], [1280, 0]])
 
-                            matrix = cv.getPerspectiveTransform(pts1, pts2)
-                            transformed_frame = cv.warpPerspective(image, matrix, (1280, 720))
+                                matrix = cv.getPerspectiveTransform(pts1, pts2)
+                                transformed_frame = cv.warpPerspective(image, matrix, (1280, 720))
 
-                        cv.imwrite(f"{path}/{filename_cropped}", transformed_frame)
-                        logging.info(f"Cropped image successfully saved as {filename_cropped}")
+                            cv.imwrite(f"{path}/{filename_cropped}", transformed_frame)
+                            logging.info(f"Cropped image successfully saved as {filename_cropped}")
 
                 cv.waitKey(1000)
                 break
@@ -128,8 +132,12 @@ while True:
     if cv.waitKey(1) == ord('q'):
         break
 
+
 # Release the camera and close all windows
 cap.release()
 cv.destroyAllWindows()
 
+# Using compare function from compare_photos file to check which photo is the best quality
+logging.info("Comparing quality of Cropped Images")
+compare_photos.compare()
 logging.info("Ending program")
