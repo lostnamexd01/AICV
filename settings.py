@@ -1,6 +1,7 @@
 import cv2 as cv
 
 # Settings
+directory_name = 'images'
 camera_choice = 1
 frame_width = 1280
 frame_height = 720

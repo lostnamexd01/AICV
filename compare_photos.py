@@ -28,7 +28,7 @@ def compare():
         # Calculate an overall quality score (you can define your own metric)
         quality = sharpness - noise
 
-        print(f'Current photo: {image_name}\n\tQuality: {quality:.2f}')
+        print(f'Current photo: {image_name}\n\tQuality: {quality:.2f}', flush=True)
         # Check if this image has higher quality than the current best
         if quality > best_quality:
             best_image = image
@@ -37,8 +37,8 @@ def compare():
 
     # Display the best image
     if best_image is not None:
-        print(f'Best Image Quality: {best_quality:.2f}')
-        print(f'Best Image Name: {best_image_name}')
+        print(f'Best Image Quality: {best_quality:.2f}', flush=True)
+        print(f'Best Image Name: {best_image_name}', flush=True)
 
     else:
         print("No valid images found in the folder.")

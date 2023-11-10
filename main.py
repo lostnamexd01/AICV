@@ -6,44 +6,40 @@ import logging
 import compare_photos
 import settings
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s     %(levelname)s     %(message)s'
-)
 
-logging.info('Starting program')
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s     %(levelname)s     %(message)s'
+    )
+
 
 # Create an image_directory for saving images
-current_directory = os.getcwd()
-image_directory = 'images'
-logging.info(f'Current working directory: {current_directory}')
+def create_image_directory(directory_name):
+    current_directory = os.getcwd()
+    logging.info(f'Current working directory: {current_directory}')
 
-path = os.path.join(current_directory, image_directory)
-try:
-    os.mkdir(path)
-except OSError as error:
-    logging.warning(f'Error while creating directory: {error}')
+    path = os.path.join(current_directory, directory_name)
+    try:
+        os.mkdir(path)
+    except OSError as error:
+        logging.warning(f'Error while creating directory: {error}')
 
 
 # Open the camera and set resolution (you can check available cameras using 'camera_detect' script)
 # DSHOW is an interface to the video I/O library provided by OS
-cap = cv.VideoCapture(settings.camera_choice, cv.CAP_DSHOW)
-cap.set(cv.CAP_PROP_FRAME_WIDTH, settings.frame_width)
-cap.set(cv.CAP_PROP_FRAME_HEIGHT, settings.frame_height)
+def initialize_camera():
+    cap = cv.VideoCapture(settings.camera_choice, cv.CAP_DSHOW)
+    cap.set(cv.CAP_PROP_FRAME_WIDTH, settings.frame_width)
+    cap.set(cv.CAP_PROP_FRAME_HEIGHT, settings.frame_height)
 
-if not cap.isOpened():
-    logging.error('Cannot open camera')
-    exit()
+    if not cap.isOpened():
+        logging.error('Cannot open camera')
+        exit()
+    return cap
 
-while True:
-    # Capture frame-by-frame
-    ret, frame = cap.read()
-    # if the frame is read correctly, ret is True
-    if not ret:
-        logging.error("Can't receive frame (stream end?). Exiting ...")
-        break
 
+def process_frame(frame, path, cap):
     # Display the frame
     cv.imshow('frame', frame)
 
@@ -117,16 +113,40 @@ while True:
                 cv.waitKey(1000)
                 break
 
-    # End the capture after pressing 'q'
-    if cv.waitKey(1) == ord('q'):
-        break
+
+def main():
+    setup_logging()
+    logging.info('Starting program')
+
+    create_image_directory(settings.directory_name)
+
+    cap = initialize_camera()
+
+    while True:
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+        # if the frame is read correctly, ret is True
+        if not ret:
+            logging.error("Can't receive frame (stream end?). Exiting ...")
+            break
+
+        process_frame(frame, settings.directory_name, cap)
+
+        # End the capture after pressing 'q'
+        if cv.waitKey(1) == ord('q'):
+            break
+
+    # Release the camera and close all windows
+    cap.release()
+    cv.destroyAllWindows()
+
+    # Using compare function from compare_photos file to check which photo is the best quality
+    logging.info('Comparing quality of Cropped Images')
+    try:
+        compare_photos.compare()
+    finally:
+        logging.info('Ending program')
 
 
-# Release the camera and close all windows
-cap.release()
-cv.destroyAllWindows()
-
-# Using compare function from compare_photos file to check which photo is the best quality
-logging.info('Comparing quality of Cropped Images')
-compare_photos.compare()
-logging.info('Ending program')
+if __name__ == "__main__":
+    main()
