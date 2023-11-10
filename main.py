@@ -4,47 +4,36 @@ import cv2 as cv
 import pyzbar.pyzbar as pyzbar
 import logging
 import compare_photos
+import settings
 
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s     %(levelname)s     %(message)s"
+    format='%(asctime)s     %(levelname)s     %(message)s'
 )
 
-logging.info("Starting program")
+logging.info('Starting program')
 
 # Create an image_directory for saving images
 current_directory = os.getcwd()
-image_directory = "images"
-logging.info(f"Current working directory: {current_directory}")
+image_directory = 'images'
+logging.info(f'Current working directory: {current_directory}')
 
 path = os.path.join(current_directory, image_directory)
 try:
     os.mkdir(path)
 except OSError as error:
-    logging.warning(f"Error while creating directory: {error}")
+    logging.warning(f'Error while creating directory: {error}')
 
-# Settings
-camera_choice = 1
-frame_width = 1280
-frame_height = 720
-qr_rectangle_color = (0, 0, 255)
-text_start_point = (frame_width // 2 - 20, frame_height // 2)
-text_font = cv.FONT_HERSHEY_SIMPLEX
-font_scale = 5
-text_color = (0, 0, 255)
-thickness = 5
-our_QR_text = "Take a screenshot now!"
-# filename_cropped = "Cropped_paper.png"
 
 # Open the camera and set resolution (you can check available cameras using 'camera_detect' script)
 # DSHOW is an interface to the video I/O library provided by OS
-cap = cv.VideoCapture(camera_choice, cv.CAP_DSHOW)
-cap.set(cv.CAP_PROP_FRAME_WIDTH, frame_width)
-cap.set(cv.CAP_PROP_FRAME_HEIGHT, frame_height)
+cap = cv.VideoCapture(settings.camera_choice, cv.CAP_DSHOW)
+cap.set(cv.CAP_PROP_FRAME_WIDTH, settings.frame_width)
+cap.set(cv.CAP_PROP_FRAME_HEIGHT, settings.frame_height)
 
 if not cap.isOpened():
-    logging.error("Cannot open camera")
+    logging.error('Cannot open camera')
     exit()
 
 while True:
@@ -62,30 +51,30 @@ while True:
     barcode = pyzbar.decode(frame)
 
     if barcode:
-        logging.info("Recognized a barcode!")
+        logging.info('Recognized a barcode!')
         bdata = barcode[0].data.decode('utf-8')
-        logging.info(f"QR decoded: \"{bdata}\"")
+        logging.info(f'QR decoded: \"{bdata}\"')
 
         for QR in barcode:
             x, y, w, h = QR.rect
-            cv.rectangle(frame, (x, y), (x + w, y + h), qr_rectangle_color, thickness)
+            cv.rectangle(frame, (x, y), (x + w, y + h), settings.qr_rectangle_color, settings.thickness)
 
-            if QR.data.decode('utf-8') == our_QR_text:
+            if QR.data.decode('utf-8') == settings.our_QR_text:
                 for i in range(3, -1, -1):
-                    cv.putText(frame, str(i), text_start_point, text_font, font_scale, text_color, thickness,
-                               cv.LINE_AA)
+                    cv.putText(frame, str(i), settings.text_start_point, settings.text_font, settings.font_scale,
+                               settings.text_color, settings.thickness, cv.LINE_AA)
                     cv.imshow('frame', frame)
                     frame = cap.read()[1]  # Read a new frame before updating the countdown
-                    filename_capture = f"QRPhoto_{i}.png"
-                    cv.imwrite(f"{path}/{filename_capture}", frame)
-                    logging.info(f"Image successfully saved as {filename_capture}")
+                    filename_capture = f'QRPhoto_{i}.png'
+                    cv.imwrite(f'{path}/{filename_capture}', frame)
+                    logging.info(f'Image successfully saved as {filename_capture}')
                     cv.waitKey(1000)
 
                     # Extracting the paper from the photo after the countdown
                     if i == 0:
                         for j in range(0, 4):
                             image_name = f'QRPhoto_{j}.png'
-                            filename_cropped = f"Cropped_paper_{j}.png"
+                            filename_cropped = f'Cropped_paper_{j}.png'
                             image = cv.imread(f'{path}/{image_name}')
 
                             # Convert the image to grayscale for easier processing
@@ -122,8 +111,8 @@ while True:
                                 matrix = cv.getPerspectiveTransform(pts1, pts2)
                                 transformed_frame = cv.warpPerspective(image, matrix, (1280, 720))
 
-                            cv.imwrite(f"{path}/{filename_cropped}", transformed_frame)
-                            logging.info(f"Cropped image successfully saved as {filename_cropped}")
+                            cv.imwrite(f'{path}/{filename_cropped}', transformed_frame)
+                            logging.info(f'Cropped image successfully saved as {filename_cropped}')
 
                 cv.waitKey(1000)
                 break
@@ -138,6 +127,6 @@ cap.release()
 cv.destroyAllWindows()
 
 # Using compare function from compare_photos file to check which photo is the best quality
-logging.info("Comparing quality of Cropped Images")
+logging.info('Comparing quality of Cropped Images')
 compare_photos.compare()
-logging.info("Ending program")
+logging.info('Ending program')
