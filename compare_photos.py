@@ -39,7 +39,7 @@ def compare():
     if best_image is not None:
         #print(f'Best Image Quality: {best_quality:.2f}', flush=True)
         #print(f'Best Image Name: {best_image_name}', flush=True)
-        predict.predict(best_image)
+        predict.predict()
 
     else:
         print("No valid images found in the folder.")

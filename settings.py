@@ -2,7 +2,7 @@ import cv2 as cv
 
 # Settings
 directory_name = 'images'
-camera_choice = 1
+camera_choice = 0
 frame_width = 1280
 frame_height = 720
 qr_rectangle_color = (0, 0, 255)
