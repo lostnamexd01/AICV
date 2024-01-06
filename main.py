@@ -5,6 +5,7 @@ import pyzbar.pyzbar as pyzbar
 import logging
 import compare_photos
 import settings
+import predict
 
 
 def setup_logging():
@@ -144,6 +145,7 @@ def main():
     logging.info('Comparing quality of Cropped Images')
     try:
         compare_photos.compare()
+        predict.predict()
     finally:
         logging.info('Ending program')
 

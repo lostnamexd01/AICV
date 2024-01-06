@@ -23,15 +23,14 @@ image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 result = divide_img_blocks(image)
 fig = plt.figure(figsize=(8, 16))
 
-model = tf.keras.models.load_model("./ai_model.keras")
+model = tf.keras.models.load_model("./ai_model.h5")
 
 for i in range(4):
     img = result[i]
     fig.add_subplot(2, 2, i + 1)
     plt.imshow(img)
     plt.axis("off")
-    t = cv2.imread(img)
-    t_input = cv2.resize(t, (256, 256))
+    t_input = cv2.resize(img, (256, 256))
     input = t_input.reshape((1, 256, 256, 3))
     prediction = model.predict(input)
     if prediction > 0.5:
