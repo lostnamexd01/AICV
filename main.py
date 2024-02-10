@@ -145,9 +145,12 @@ def main():
     logging.info('Comparing quality of Cropped Images')
     try:
         compare_photos.compare()
-        predict.predict()
+        predict.main()
+        
     finally:
         logging.info('Ending program')
+    
+    
 
 
 if __name__ == "__main__":

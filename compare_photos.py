@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import predict
 
 def calculate_sharpness(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -37,9 +36,9 @@ def compare():
 
     # Display the best image
     if best_image is not None:
-        #print(f'Best Image Quality: {best_quality:.2f}', flush=True)
-        #print(f'Best Image Name: {best_image_name}', flush=True)
-        predict.predict()
+        print(f'Best Image Quality: {best_quality:.2f}', flush=True)
+        print(f'Best Image Name: {best_image_name}', flush=True)
+        return best_image_name
 
     else:
         print("No valid images found in the folder.")
